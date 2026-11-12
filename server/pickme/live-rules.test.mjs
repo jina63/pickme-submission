@@ -1,0 +1,63 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+const dbHost=process.env.FIREBASE_DATABASE_EMULATOR_HOST,authHost=process.env.FIREBASE_AUTH_EMULATOR_HOST;
+if(!dbHost || !authHost)throw Error('Use local database + auth emulators only.');
+async function signup(){const r=await fetch(`http://${authHost}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=test-only`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});assert.equal(r.status,200);return r.json();}
+async function call(path,method='GET',body,token){const r=await fetch(`http://${dbHost}/${path}.json?ns=demo-pickme-invites-default-rtdb${token?'&auth='+encodeURIComponent(token):''}`,{method,headers:{'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});return {ok:r.ok,status:r.status,data:await r.json()};}
+test('only invitation-bound auth writer can publish live position; reader cannot change it',async()=>{
+ const driver=await signup(),stranger=await signup(),key=randomBytes(24).toString('base64url'),path=`pickmeInvites/${key}`;
+ const invite={contactId:'demo-contact-03',passengerName:'친구 3',driverName:'운전자',status:'pending',createdAt:{'.sv':'timestamp'},expiresAt:Date.now()+23*3600000,trackingOwnerUid:driver.localId};
+ assert.equal((await call(path,'PUT',invite)).ok,false);
+ assert.equal((await call(path,'PUT',invite,stranger.idToken)).ok,false);
+ assert.equal((await call(path,'PUT',invite,driver.idToken)).ok,true);
+ assert.equal((await call(path,'PATCH',{trackingOwnerUid:stranger.localId})).ok,false);
+ const point={latitude:37.4,longitude:127.1,label:'시연 탑승',source:'manual',locationSource:'demo'};
+ assert.equal((await call(path,'PATCH',{status:'accepted',pickupPoint:point,respondedAt:{'.sv':'timestamp'}})).ok,true);
+ const publicData={state:'accepted',source:'pleos',sharingAllowed:true,isEmulator:true,updatedAt:{'.sv':'timestamp'},expiresAt:Date.now()+3500000,destinationLabel:'시연 목적지'};
+ const live=`pickmeLive/${key}`;
+ assert.equal((await call(live,'PUT',{public:publicData},stranger.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:publicData},driver.idToken)).ok,true);
+ assert.equal((await call(live)).ok,false);
+ assert.equal((await call(`${live}/public`)).data.state,'accepted');
+ const moving={...publicData,state:'on_way',position:{latitude:37.401,longitude:127.101},etaStatus:'sdk-unavailable'};
+ assert.equal((await call(live,'PUT',{public:moving})).ok,false);
+ assert.equal((await call(live,'PUT',{public:moving},driver.idToken)).ok,true);
+ assert.equal((await call(live,'PUT',{public:{...moving,position:{latitude:0,longitude:0}}},driver.idToken)).ok,false);
+ const cafeVisit={name:'경유 카페',phase:'before_pickup',position:{latitude:37.42,longitude:127.12}};
+ assert.equal((await call(live,'PUT',{public:{...moving,cafeVisit}},driver.idToken)).ok,true);
+ assert.equal((await call(`${live}/public`)).data.cafeVisit.name,'경유 카페');
+ assert.equal((await call(live,'PUT',{public:{...moving,cafeVisit:{...cafeVisit,position:{latitude:0,longitude:0}}}},driver.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:{...moving,cafeVisit}},stranger.idToken)).ok,false);
+ const routePreview={polyline:'_p~iF~ps|U_ulLnnqC',viaCafe:true,source:'kakao-directions'};
+ assert.equal((await call(live,'PUT',{public:{...moving,cafeVisit,routePreview}},driver.idToken)).ok,true);
+ assert.equal((await call(`${live}/public`)).data.routePreview.viaCafe,true);
+ assert.equal((await call(live,'PUT',{public:{...moving,routePreview:{...routePreview,source:'other'}}},driver.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:{...moving,routePreview:{...routePreview,polyline:'x'.repeat(4001)}}},driver.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:{...moving,routePreview:{...routePreview,extra:1}}},driver.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:{...moving,cafeVisit:{...cafeVisit,phase:'collected'}}},driver.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:{...moving,cafeVisit:{...cafeVisit,secret:'no'}}},driver.idToken)).ok,false);
+ assert.equal((await call(live,'PUT',{public:{...publicData,cafeVisit}},driver.idToken)).ok,false);
+ const paused={...publicData,state:'paused'};
+ assert.equal((await call(live,'PUT',{public:paused},driver.idToken)).ok,true);
+ assert.equal((await call(`${live}/public`)).data.position,undefined);
+ assert.equal((await call(`${live}/public`)).data.cafeVisit,undefined);
+ assert.equal((await call('pickmeLive')).ok,false);
+});
+
+test('passenger ready requires accepted unexpired invite, fixed timestamp and no list access',async()=>{
+ const key=randomBytes(24).toString('base64url'),path=`pickmeInvites/${key}`,ready=`pickmeReady/${key}`;
+ const invite={contactId:'demo-contact-03',passengerName:'친구 3',driverName:'시연 운전자',status:'pending',createdAt:{'.sv':'timestamp'},expiresAt:Date.now()+3600000};
+ assert.equal((await call(path,'PUT',invite)).ok,true);
+ assert.equal((await call(ready,'PUT',{readyAt:{'.sv':'timestamp'}})).ok,false);
+ await call(path,'PATCH',{status:'accepted',pickupPoint:{latitude:37.4,longitude:127.1,label:'시연',source:'manual',locationSource:'demo'},respondedAt:{'.sv':'timestamp'}});
+ assert.equal((await call(ready,'PUT',{readyAt:1})).ok,false);
+ assert.equal((await call(ready,'PUT',{readyAt:{'.sv':'timestamp'},other:true})).ok,false);
+ assert.equal((await call(ready,'PUT',{readyAt:{'.sv':'timestamp'}})).ok,true);
+ assert.equal((await call(path,'PATCH',{driverName:'다른 사람'})).ok,false);
+ const first=(await call(ready)).data.readyAt;assert.equal(typeof first,'number');
+ assert.equal((await call(ready,'PUT',{readyAt:{'.sv':'timestamp'}})).ok,false);
+ assert.equal((await call(ready,'DELETE')).ok,false);
+ assert.equal((await call('pickmeReady')).ok,false);
+ assert.equal((await call(`pickmeReady/${randomBytes(24).toString('base64url')}`,'PUT',{readyAt:{'.sv':'timestamp'}})).ok,false);
+});

@@ -1,0 +1,305 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "stores": {
+      ".read": true,
+      ".write": false
+    },
+    "orders": {
+      ".read": true,
+      "$orderId": {
+        ".write": "newData.exists()",
+        ".validate": "newData.hasChildren(['storeId','item','qty','status','etaAt','createdAt']) && (data.exists() ? (newData.child('storeId').val() === data.child('storeId').val() && newData.child('item').val() === data.child('item').val() && newData.child('qty').val() === data.child('qty').val() && newData.child('createdAt').val() === data.child('createdAt').val()) : newData.child('status').val() === 'ordered')",
+        "storeId": { ".validate": "newData.isString() && root.child('stores').child(newData.val()).exists()" },
+        "item": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
+        "qty": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 99" },
+        "status": { ".validate": "newData.val() === 'ordered' || newData.val() === 'accepted' || newData.val() === 'making' || newData.val() === 'ready' || newData.val() === 'picked_up'" },
+        "etaAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" }
+      }
+    },
+    "pickmeInvites": {
+      "$key": {
+        ".read": "$key.matches(/^[A-Za-z0-9_-]{32}$/) && data.child('expiresAt').val() > now",
+        ".write": "$key.matches(/^[A-Za-z0-9_-]{32}$/) && newData.exists() && ((!data.exists() && newData.child('status').val() === 'pending') || (data.child('expiresAt').val() > now && data.child('status').val() === 'pending'))",
+        ".validate": "newData.hasChildren(['contactId','passengerName','driverName','status','createdAt','expiresAt']) && ((newData.child('contactId').val() === 'demo-contact-01' && newData.child('passengerName').val() === '친구 1') || (newData.child('contactId').val() === 'demo-contact-02' && newData.child('passengerName').val() === '친구 2') || (newData.child('contactId').val() === 'demo-contact-03' && newData.child('passengerName').val() === '친구 3') || (newData.child('contactId').val() === 'demo-contact-04' && newData.child('passengerName').val() === '친구 4') || (newData.child('contactId').val() === 'demo-contact-05' && newData.child('passengerName').val() === '김민지') || (newData.child('contactId').val() === 'demo-contact-06' && newData.child('passengerName').val() === '이도윤') || (newData.child('contactId').val() === 'demo-contact-07' && newData.child('passengerName').val() === '박서연') || (newData.child('contactId').val() === 'demo-contact-08' && newData.child('passengerName').val() === '최지우') || (newData.child('contactId').val() === 'demo-contact-09' && newData.child('passengerName').val() === '정하준') || (newData.child('contactId').val() === 'demo-contact-10' && newData.child('passengerName').val() === '강수빈') || (newData.child('contactId').val() === 'demo-contact-11' && newData.child('passengerName').val() === '윤지호')) && (!data.exists() || (newData.child('contactId').val() === data.child('contactId').val() && newData.child('passengerName').val() === data.child('passengerName').val() && newData.child('driverName').val() === data.child('driverName').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('expiresAt').val() === data.child('expiresAt').val())) && ((newData.child('status').val() === 'pending' && !newData.child('respondedAt').exists() && !newData.child('pickupPoint').exists()) || (data.exists() && newData.child('respondedAt').exists() && !newData.child('locationRequest').exists() && !newData.child('proposal').exists() && ((newData.child('status').val() === 'accepted' && newData.child('pickupPoint').exists()) || (newData.child('status').val() === 'declined' && !newData.child('pickupPoint').exists())))) && (!data.exists() || (newData.child('journey').exists() === data.child('journey').exists() && newData.child('journey/destinationLabel').val() === data.child('journey/destinationLabel').val() && newData.child('journey/source').val() === data.child('journey/source').val())) && (!data.exists() || newData.child('trackingOwnerUid').val() === data.child('trackingOwnerUid').val())",
+        "contactId": {
+          ".validate": "newData.isString()"
+        },
+        "passengerName": {
+          ".validate": "newData.isString()"
+        },
+        "driverName": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+        },
+        "status": {
+          ".validate": "newData.val() === 'pending' || newData.val() === 'accepted' || newData.val() === 'declined'"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && ((!data.exists() && newData.val() === now) || newData.val() === data.val())"
+        },
+        "expiresAt": {
+          ".validate": "newData.isNumber() && newData.val() > now && newData.val() <= now + 86400000"
+        },
+        "respondedAt": {
+          ".validate": "newData.isNumber() && newData.val() === now"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "locationRequest": {
+          ".validate": "newData.hasChildren([\"requestId\", \"location\"])",
+          "requestId": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{32}$/)"
+          },
+          "location": {
+            ".validate": "newData.hasChildren([\"latitude\", \"longitude\", \"accuracy\", \"source\"])",
+            "latitude": {
+              ".validate": "newData.isNumber() && newData.val() >= -85 && newData.val() <= 85"
+            },
+            "longitude": {
+              ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+            },
+            "accuracy": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+            },
+            "source": {
+              ".validate": "newData.val() === 'gps' || newData.val() === 'demo' || newData.val() === 'search'"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "proposal": {
+          ".validate": "newData.hasChildren([\"requestId\", \"kind\"]) && ((newData.child('kind').val() === 'candidate' && newData.child('candidate').exists()) || ((newData.child('kind').val() === 'none' || newData.child('kind').val() === 'unavailable') && !newData.child('candidate').exists()))",
+          "requestId": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{32}$/)"
+          },
+          "kind": {
+            ".validate": "newData.val() === 'candidate' || newData.val() === 'none' || newData.val() === 'unavailable'"
+          },
+          "candidate": {
+            ".validate": "newData.hasChildren([\"id\", \"label\", \"latitude\", \"longitude\", \"verification\", \"note\", \"distanceMeters\"]) && ((newData.child('verification').val() === 'map-unverified' && newData.child('id').val().matches(/^osm-(node|way|relation)-[0-9]+$/)) || (newData.child('verification').val() === 'kakao' && newData.child('id').val().matches(/^kakao-[0-9]+$/)) || (newData.child('verification').val() === 'demo' && ((newData.child('id').val() === 'hanyang-seoul-main-demo' && newData.child('latitude').val() === 37.55715 && newData.child('longitude').val() === 127.04375) || (newData.child('id').val() === 'demo-pangyo2-dallaenae-parking' && newData.child('latitude').val() === 37.409103 && newData.child('longitude').val() === 127.097655) || (newData.child('id').val() === 'demo-pangyo-daewang-parking' && newData.child('latitude').val() === 37.415531 && newData.child('longitude').val() === 127.102472) || (newData.child('id').val() === 'demo-pangyo-techno-parking' && newData.child('latitude').val() === 37.402773 && newData.child('longitude').val() === 127.106818) || (newData.child('id').val() === 'demo-pangyo-station' && newData.child('latitude').val() === 37.394373 && newData.child('longitude').val() === 127.111152) || (newData.child('id').val() === 'demo-hyundai-pangyo' && newData.child('latitude').val() === 37.3928 && newData.child('longitude').val() === 127.111991) || (newData.child('id').val() === 'demo-baekhyeon-cafe-parking' && newData.child('latitude').val() === 37.38545 && newData.child('longitude').val() === 127.112027) || (newData.child('id').val() === 'demo-siheung-center' && newData.child('latitude').val() === 37.422035 && newData.child('longitude').val() === 127.107956))))",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "label": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+            },
+            "latitude": {
+              ".validate": "newData.isNumber() && newData.val() >= -85 && newData.val() <= 85"
+            },
+            "longitude": {
+              ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+            },
+            "verification": {
+              ".validate": "newData.val() === 'demo' || newData.val() === 'map-unverified' || newData.val() === 'kakao'"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length <= 300"
+            },
+            "distanceMeters": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1200"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": false
+          },
+          "routeStatus": {
+            ".validate": "newData.val() === 'pleos-context-only' || newData.val() === 'missing' || newData.val() === 'demo'"
+          },
+          "candidates": {
+            ".validate": "newData.parent().child('kind').val() === 'candidate'",
+            "$index": {
+              ".validate": "($index === '0' || $index === '1' || $index === '2') && (newData.hasChildren([\"id\", \"label\", \"latitude\", \"longitude\", \"verification\", \"note\", \"distanceMeters\"]) && ((newData.child('verification').val() === 'map-unverified' && newData.child('id').val().matches(/^osm-(node|way|relation)-[0-9]+$/)) || (newData.child('verification').val() === 'kakao' && newData.child('id').val().matches(/^kakao-[0-9]+$/)) || (newData.child('verification').val() === 'demo' && ((newData.child('id').val() === 'hanyang-seoul-main-demo' && newData.child('latitude').val() === 37.55715 && newData.child('longitude').val() === 127.04375) || (newData.child('id').val() === 'demo-pangyo2-dallaenae-parking' && newData.child('latitude').val() === 37.409103 && newData.child('longitude').val() === 127.097655) || (newData.child('id').val() === 'demo-pangyo-daewang-parking' && newData.child('latitude').val() === 37.415531 && newData.child('longitude').val() === 127.102472) || (newData.child('id').val() === 'demo-pangyo-techno-parking' && newData.child('latitude').val() === 37.402773 && newData.child('longitude').val() === 127.106818) || (newData.child('id').val() === 'demo-pangyo-station' && newData.child('latitude').val() === 37.394373 && newData.child('longitude').val() === 127.111152) || (newData.child('id').val() === 'demo-hyundai-pangyo' && newData.child('latitude').val() === 37.3928 && newData.child('longitude').val() === 127.111991) || (newData.child('id').val() === 'demo-baekhyeon-cafe-parking' && newData.child('latitude').val() === 37.38545 && newData.child('longitude').val() === 127.112027) || (newData.child('id').val() === 'demo-siheung-center' && newData.child('latitude').val() === 37.422035 && newData.child('longitude').val() === 127.107956)))))",
+              "id": {
+                ".validate": "newData.isString() && newData.val().length <= 80"
+              },
+              "label": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+              },
+              "latitude": {
+                ".validate": "newData.isNumber() && newData.val() >= -85 && newData.val() <= 85"
+              },
+              "longitude": {
+                ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+              },
+              "verification": {
+                ".validate": "newData.val() === 'demo' || newData.val() === 'map-unverified' || newData.val() === 'kakao'"
+              },
+              "note": {
+                ".validate": "newData.isString() && newData.val().length <= 300"
+              },
+              "distanceMeters": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1200"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+        "pickupPoint": {
+          ".validate": "newData.hasChildren(['latitude','longitude','label','source','locationSource']) && ((newData.child('source').val() === 'manual' && !newData.child('candidateId').exists()) || (newData.child('source').val() === 'recommended' && ((newData.child('candidateId').val() === data.parent().child('proposal/candidate/id').val() && newData.child('latitude').val() === data.parent().child('proposal/candidate/latitude').val() && newData.child('longitude').val() === data.parent().child('proposal/candidate/longitude').val() && newData.child('label').val() === data.parent().child('proposal/candidate/label').val()) || (newData.child('candidateId').val() === data.parent().child('proposal/candidates/0/id').val() && newData.child('latitude').val() === data.parent().child('proposal/candidates/0/latitude').val() && newData.child('longitude').val() === data.parent().child('proposal/candidates/0/longitude').val() && newData.child('label').val() === data.parent().child('proposal/candidates/0/label').val()) || (newData.child('candidateId').val() === data.parent().child('proposal/candidates/1/id').val() && newData.child('latitude').val() === data.parent().child('proposal/candidates/1/latitude').val() && newData.child('longitude').val() === data.parent().child('proposal/candidates/1/longitude').val() && newData.child('label').val() === data.parent().child('proposal/candidates/1/label').val()) || (newData.child('candidateId').val() === data.parent().child('proposal/candidates/2/id').val() && newData.child('latitude').val() === data.parent().child('proposal/candidates/2/latitude').val() && newData.child('longitude').val() === data.parent().child('proposal/candidates/2/longitude').val() && newData.child('label').val() === data.parent().child('proposal/candidates/2/label').val()))))",
+          "latitude": {
+            ".validate": "newData.isNumber() && newData.val() >= -85 && newData.val() <= 85"
+          },
+          "longitude": {
+            ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+          },
+          "label": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+          },
+          "source": {
+            ".validate": "newData.val() === 'recommended' || newData.val() === 'manual'"
+          },
+          "locationSource": {
+            ".validate": "newData.val() === 'gps' || newData.val() === 'demo' || newData.val() === 'manual'"
+          },
+          "candidateId": {
+            ".validate": "newData.isString() && (newData.val() === 'hanyang-seoul-main-demo' || newData.val() === 'demo-pangyo2-dallaenae-parking' || newData.val() === 'demo-pangyo-daewang-parking' || newData.val() === 'demo-pangyo-techno-parking' || newData.val() === 'demo-pangyo-station' || newData.val() === 'demo-hyundai-pangyo' || newData.val() === 'demo-baekhyeon-cafe-parking' || newData.val() === 'demo-siheung-center' || newData.val().matches(/^osm-(node|way|relation)-[0-9]+$/) || newData.val().matches(/^kakao-[0-9]+$/))"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "journey": {
+          ".validate": "newData.hasChildren(['destinationLabel','source'])",
+          "destinationLabel": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+          },
+          "source": {
+            ".validate": "newData.val() === 'pleos' || newData.val() === 'demo'"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "trackingOwnerUid": {
+          ".validate": "newData.isString() && newData.val().length <= 128 && ((!data.exists() && !root.child('pickmeInvites').child($key).exists() && auth != null && auth.uid === newData.val()) || (data.exists() && newData.val() === data.val()))"
+        }
+      }
+    },
+    "pickmeLive": {
+      "$key": {
+        ".validate": "newData.hasChildren([\"public\"])",
+        "public": {
+          ".validate": "newData.hasChildren([\"state\", \"source\", \"isEmulator\", \"updatedAt\", \"expiresAt\", \"sharingAllowed\"]) && ((newData.child('state').val() === 'on_way' && newData.child('position').exists()) || (newData.child('state').val() !== 'on_way' && !newData.child('position').exists() && !newData.child('pickupEtaSeconds').exists())) && (newData.child('pickupEtaSeconds').exists() === newData.child('etaSource').exists()) && (newData.child('state').val() !== 'on_way' || newData.child('sharingAllowed').val() === true)",
+          "state": {
+            ".validate": "newData.val() === 'accepted' || newData.val() === 'on_way' || newData.val() === 'paused'"
+          },
+          "source": {
+            ".validate": "newData.val() === 'pleos'"
+          },
+          "isEmulator": {
+            ".validate": "newData.isBoolean()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() === now"
+          },
+          "expiresAt": {
+            ".validate": "newData.isNumber() && newData.val() <= root.child('pickmeInvites').child($key).child('expiresAt').val() && ((!data.exists() && newData.val() > now && newData.val() <= now + 3600000) || (data.exists() && newData.val() === data.val()))"
+          },
+          "destinationLabel": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+          },
+          "position": {
+            ".validate": "newData.hasChildren([\"latitude\", \"longitude\"]) && (newData.child('latitude').val() !== 0 || newData.child('longitude').val() !== 0)",
+            "latitude": {
+              ".validate": "newData.isNumber() && newData.val() >= -85 && newData.val() <= 85"
+            },
+            "longitude": {
+              ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+            },
+            "heading": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 360"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "pickupEtaSeconds": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 86400"
+          },
+          "etaSource": {
+            ".validate": "newData.val() === 'pleos-waypoint'"
+          },
+          "etaStatus": {
+            ".validate": "newData.val() === 'available' || newData.val() === 'sdk-unavailable'"
+          },
+          "$other": {
+            ".validate": false
+          },
+          ".read": "$key.matches(/^[A-Za-z0-9_-]{32}$/) && data.child('expiresAt').val() > now && root.child('pickmeInvites').child($key).child('status').val() === 'accepted'",
+          "sharingAllowed": {
+            ".validate": "newData.isBoolean()"
+          },
+          "cafeVisit": {
+            ".validate": "newData.hasChildren(['name','phase']) && newData.parent().child('state').val() === 'on_way' && newData.parent().child('sharingAllowed').val() === true",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+            },
+            "phase": {
+              ".validate": "newData.val() === 'before_pickup' || newData.val() === 'at_cafe' || newData.val() === 'passed'"
+            },
+            "$other": {
+              ".validate": false
+            },
+            "position": {
+              ".validate": "newData.hasChildren([\"latitude\", \"longitude\"]) && (newData.child('latitude').val() !== 0 || newData.child('longitude').val() !== 0)",
+              "latitude": {
+                ".validate": "newData.isNumber() && newData.val() >= -85 && newData.val() <= 85"
+              },
+              "longitude": {
+                ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "routePreview": {
+            ".validate": "newData.hasChildren(['polyline','viaCafe','source']) && newData.parent().child('state').val() === 'on_way' && newData.parent().child('sharingAllowed').val() === true",
+            "polyline": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 4000"
+            },
+            "viaCafe": {
+              ".validate": "newData.isBoolean()"
+            },
+            "source": {
+              ".validate": "newData.val() === 'kakao-directions'"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        },
+        ".write": "$key.matches(/^[A-Za-z0-9_-]{32}$/) && auth != null && auth.uid === root.child('pickmeInvites').child($key).child('trackingOwnerUid').val() && root.child('pickmeInvites').child($key).child('status').val() === 'accepted' && newData.exists() && (newData.child('public/state').val() === 'paused' || (root.child('pickmeInvites').child($key).child('expiresAt').val() > now && newData.child('public/expiresAt').val() > now))"
+      }
+    },
+    "pickmeReady": {
+      "$key": {
+        ".read": "$key.matches(/^[A-Za-z0-9_-]{32}$/) && root.child('pickmeInvites').child($key).child('status').val() === 'accepted' && root.child('pickmeInvites').child($key).child('expiresAt').val() > now",
+        ".write": "$key.matches(/^[A-Za-z0-9_-]{32}$/) && !data.exists() && newData.exists() && root.child('pickmeInvites').child($key).child('status').val() === 'accepted' && root.child('pickmeInvites').child($key).child('expiresAt').val() > now",
+        ".validate": "newData.hasChildren(['readyAt'])",
+        "readyAt": {
+          ".validate": "newData.isNumber() && newData.val() === now"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

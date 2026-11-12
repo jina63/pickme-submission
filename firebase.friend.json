@@ -1,0 +1,47 @@
+{
+  "hosting": {
+    "site": "pickme-ca1cd-friend",
+    "public": "web/friend",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "README.md",
+      "driver.html",
+      "driver.js"
+    ],
+    "rewrites": [
+      {
+        "source": "/friend",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; connect-src 'self' https://photon.komoot.io https://pickme-ca1cd-default-rtdb.asia-southeast1.firebasedatabase.app; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; frame-ancestors 'none'; base-uri 'none'"
+          }
+        ]
+      }
+    ]
+  },
+  "database": {
+    "instance": "pickme-ca1cd-default-rtdb",
+    "rules": "firebase/database.rules.json"
+  }
+}

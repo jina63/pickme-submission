@@ -1,0 +1,74 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { once } from 'node:events';
+import { createInvitationServer } from './server.mjs';
+
+test('초대 생성, 친구 응답, 소유자 접근, 만료와 중복 응답', async t => {
+  let clock = Date.now();
+  const server = createInvitationServer({ now: () => clock, ttlMs: 60000 });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  async function call(path, method = 'GET', body, headers = {}) {
+    const response = await fetch(base + path, { method, headers: { 'Content-Type': 'application/json', ...headers }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    return { status: response.status, data: await response.json(), cookie: response.headers.get('set-cookie')?.split(';')[0] };
+  }
+  const owner = await call('/api/driver/session', 'POST', {});
+  assert.equal(owner.status, 201);
+  const other = await call('/api/driver/session', 'POST', {});
+  assert.equal((await call('/api/pickups', 'POST', {})).status, 401);
+  assert.equal((await call('/api/pickups', 'POST', {}, { Cookie: owner.cookie })).status, 400);
+  const created = await call('/api/pickups', 'POST', { passengerName: '친구 2', meetingPoint: '편의점 앞', destination: '서울숲' }, { Cookie: owner.cookie });
+  assert.equal(created.status, 201);
+  assert.equal(created.data.status, 'pending');
+  assert.equal(created.data.owner, undefined);
+  const token = new URL(created.data.inviteUrl).hash.slice(1);
+  const auth = { Authorization: `Bearer ${token}` };
+  assert.equal((await call('/api/friend/invitation', 'GET', undefined, auth)).data.meetingPoint, '편의점 앞');
+  assert.equal((await call(`/api/pickups/${created.data.id}`, 'GET', undefined, { Cookie: other.cookie })).status, 404);
+  assert.equal((await call('/api/friend/invitation', 'GET', undefined, { Authorization: 'Bearer invalid' })).status, 404);
+  assert.equal((await call('/api/friend/invitation', 'POST', { status: 'picked_up' }, auth)).status, 400);
+  const accepted = await call('/api/friend/invitation', 'POST', { status: 'accepted', pickupPoint: {latitude:37.55715,longitude:127.04375,label:'직접 선택한 탑승 장소',source:'manual',locationSource:'demo'} }, auth);
+  assert.equal(accepted.status, 200);
+  assert.equal(accepted.data.status, 'accepted');
+  const repeated = await call('/api/friend/invitation', 'POST', { status: 'accepted', pickupPoint: {latitude:37.55715,longitude:127.04375,label:'직접 선택한 탑승 장소',source:'manual',locationSource:'demo'} }, auth);
+  assert.equal(repeated.data.respondedAt, accepted.data.respondedAt);
+  assert.equal((await call('/api/friend/invitation', 'POST', { status: 'declined' }, auth)).status, 409);
+  assert.equal((await call(`/api/pickups/${created.data.id}`, 'GET', undefined, { Cookie: owner.cookie })).data.status, 'accepted');
+  const rejected = await call('/api/pickups', 'POST', { passengerName: '친구', meetingPoint: '입구', destination: '극장' }, { Cookie: owner.cookie });
+  const rejectedToken = new URL(rejected.data.inviteUrl).hash.slice(1);
+  assert.equal((await call('/api/friend/invitation', 'POST', { status: 'declined' }, { Authorization: `Bearer ${rejectedToken}` })).data.status, 'declined');
+  assert.equal((await call('/api/driver/session', 'POST', {}, { Origin: 'https://unrelated.example' })).status, 403);
+  const contacts = await call('/api/demo/contacts');
+  assert.equal(contacts.data.source, 'demo');
+  assert.equal(contacts.data.contacts.length, 4);
+  assert.equal(new Set(contacts.data.contacts.map(c => c.name)).size, 4);
+  for (const name of ['친구 1', '친구 2', '친구 3', '친구 4']) assert.ok(contacts.data.contacts.some(c => c.name === name));
+  assert.ok(contacts.data.contacts.every(c => !('phone' in c)));
+  assert.equal((await call('/api/pickups', 'POST', { contactId: 'not-in-demo-list' }, { Cookie: owner.cookie })).status, 400);
+  const chosen = contacts.data.contacts.find(c => c.name === '친구 1');
+  const contactInvite = await call('/api/pickups', 'POST', { contactId: chosen.id, passengerName: 'spoof' }, { Cookie: owner.cookie });
+  assert.equal(contactInvite.status, 201);
+  assert.equal(contactInvite.data.passengerName, '친구 1');
+  assert.equal(contactInvite.data.meetingPoint, null);
+  assert.equal(contactInvite.data.destination, null);
+  const contactToken = new URL(contactInvite.data.inviteUrl).hash.slice(1);
+  assert.equal((await call('/api/friend/invitation', 'POST', { status: 'accepted', pickupPoint: {latitude:37.55715,longitude:127.04375,label:'직접 선택한 탑승 장소',source:'manual',locationSource:'demo'} }, { Authorization: `Bearer ${contactToken}` })).data.status, 'accepted');
+  clock += 60001;
+  assert.equal((await call('/api/friend/invitation', 'GET', undefined, auth)).status, 404);
+});
+
+test('local contacts preserve configured selection while hiding private fields',async t=>{
+ const contacts=[{id:'local-test',name:'시험 친구',subtitle:'로컬 연락처',email:'private@example.invalid',phone:'00000000000'}];
+ const server=createInvitationServer({contacts});server.listen(0,'127.0.0.1');await once(server,'listening');
+ t.after(()=>{server.closeAllConnections();server.close();});
+ const base=`http://127.0.0.1:${server.address().port}`;
+ const response=await fetch(`${base}/api/demo/contacts`);const data=await response.json();
+ assert.deepEqual(data.contacts,[{id:'local-test',name:'시험 친구',subtitle:'로컬 연락처'}]);
+ const session=await fetch(`${base}/api/driver/session`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+ const created=await fetch(`${base}/api/pickups`,{method:'POST',headers:{'Content-Type':'application/json',Cookie:session.headers.get('set-cookie').split(';')[0]},body:JSON.stringify({contactId:'local-test'})});
+ assert.equal(created.status,201);assert.equal((await created.json()).passengerName,'시험 친구');
+ const script=await fetch(`${base}/place-search.js`);assert.equal(script.status,200);
+ assert.match(script.headers.get('content-type'),/javascript/);assert.match(script.headers.get('content-security-policy'),/https:\/\/photon\.komoot\.io/);
+});

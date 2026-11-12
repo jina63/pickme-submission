@@ -1,0 +1,67 @@
+# ==============================
+# 비밀 정보 / 로컬 설정 (절대 커밋 금지)
+# ==============================
+local.properties
+.env
+.env.*
+!.env.example
+*.local.json
+
+# 서명 키 파일
+*.jks
+*.keystore
+
+# ==============================
+# macOS
+# ==============================
+.DS_Store
+
+# ==============================
+# Node.js (web, server)
+# ==============================
+node_modules/
+
+# ==============================
+# Android (car-app)
+# ==============================
+# Gradle
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+.navigation/
+
+# 빌드 결과물
+*.apk
+# 제출용 APK는 apk/ 폴더에만 올린다
+!apk/*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+release/
+
+# 로그
+*.log
+
+# 기타
+.kotlin/
+google-services.json
+firebase-config.js
+
+# Firebase CLI local cache and logs
+.firebase/
+firebase-debug.log*
+database-debug.log*
+
+# Private persistent relay sessions
+pickme-state.json*
+relay-state.json*

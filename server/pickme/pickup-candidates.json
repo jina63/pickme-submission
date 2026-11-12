@@ -1,0 +1,66 @@
+[
+  {
+    "id": "hanyang-seoul-main-demo",
+    "label": "한양대학교 서울캠퍼스 정문 승하차 구역",
+    "latitude": 37.55715,
+    "longitude": 127.04375,
+    "verification": "demo",
+    "note": "팀 지정 시연 후보 · 정문 부근 임시 좌표예요. 정확한 승하차 지점은 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-pangyo2-dallaenae-parking",
+    "label": "판교 제2테크노밸리 달래내로 주차장 부근",
+    "latitude": 37.409103,
+    "longitude": 127.097655,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-pangyo-daewang-parking",
+    "label": "판교테크노밸리 대왕판교로 주차장 부근",
+    "latitude": 37.415531,
+    "longitude": 127.102472,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-pangyo-techno-parking",
+    "label": "판교테크노밸리 판교역로241번길 주차장 부근",
+    "latitude": 37.402773,
+    "longitude": 127.106818,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-pangyo-station",
+    "label": "판교역 부근",
+    "latitude": 37.394373,
+    "longitude": 127.111152,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-hyundai-pangyo",
+    "label": "현대백화점 판교점 부근",
+    "latitude": 37.3928,
+    "longitude": 127.111991,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-baekhyeon-cafe-parking",
+    "label": "백현동 카페거리 공영주차장 부근",
+    "latitude": 37.38545,
+    "longitude": 127.112027,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  },
+  {
+    "id": "demo-siheung-center",
+    "label": "성남 시흥동 행정복지센터 부근",
+    "latitude": 37.422035,
+    "longitude": 127.107956,
+    "verification": "demo",
+    "note": "시연용 후보 · OpenStreetMap 좌표예요. 실제 정차·승하차 가능 여부는 확인하지 않았으니 지도에서 조정해 주세요."
+  }
+]

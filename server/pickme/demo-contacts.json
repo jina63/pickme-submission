@@ -1,0 +1,22 @@
+[
+  {
+    "id": "demo-contact-01",
+    "name": "친구 1",
+    "subtitle": "시연용 연락처 · 친구"
+  },
+  {
+    "id": "demo-contact-02",
+    "name": "친구 2",
+    "subtitle": "시연용 연락처 · 친구"
+  },
+  {
+    "id": "demo-contact-03",
+    "name": "친구 3",
+    "subtitle": "시연용 연락처 · 친구"
+  },
+  {
+    "id": "demo-contact-04",
+    "name": "친구 4",
+    "subtitle": "시연용 연락처 · 친구"
+  }
+]

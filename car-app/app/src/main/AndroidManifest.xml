@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
+    <uses-permission android:name="pleos.car.permission.NAVI_ROUTE_SEARCH" />
+    <uses-permission android:name="pleos.car.permission.NAVI_CUSTOM_MAP" />
+    <!-- 픽미: 차량 위치 공유 서비스 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- networkSecurityConfig: 에뮬레이터에서 컴퓨터의 픽미 중계 서버(10.0.2.2)만 http 허용 -->
+    <application android:allowBackup="false" android:networkSecurityConfig="@xml/pickme_dev_network" android:label="픽미 Pickme" android:icon="@drawable/ic_pickme" android:theme="@style/Theme.PickMe" android:supportsRtl="true">
+        <!-- 첫 화면: 픽미 / 딱픽업 선택 -->
+        <activity android:name=".home.HomeActivity" android:exported="true">
+            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+        </activity>
+        <activity android:name=".pickme.ui.InvitationActivity" android:exported="false" />
+        <service android:name=".pickme.sharing.VehicleSharingService" android:exported="false" android:foregroundServiceType="dataSync" />
+        <activity android:name="com.pickme.car.pickup.ui.OrderActivity" android:exported="true" android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden" />
+    </application>
+</manifest>

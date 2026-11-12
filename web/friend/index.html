@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>픽미 · 함께 만나요</title>
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css"><link rel="stylesheet" href="/styles.css">
+<script src="/vendor/leaflet/leaflet.js" defer></script><script src="/hosting-config.js" defer></script><script src="/place-search.js" defer></script><script src="/friend.js" defer></script>
+</head>
+<body class="friend-app">
+<main class="phone">
+<header class="brand"><span class="brand-mark" aria-hidden="true">p</span><span class="brand-name">pickme</span><span class="badge" id="status">확인 중</span></header>
+<div class="page-heading"><h1 id="page-title">어디서 만날까요?</h1><p id="page-intro" class="intro">초대를 확인하고 있어요.</p></div>
+<ol class="steps sr-only" aria-label="픽업 진행 단계"><li id="step-select" data-step="1">장소 선택</li><li id="step-request" data-step="2">픽업 요청</li><li id="step-meet" data-step="3">만날 준비</li></ol>
+<section class="card" aria-labelledby="invite-title">
+<h2 id="invite-title" class="sr-only">픽업</h2>
+<p id="message" role="status" aria-live="polite"></p>
+<dl id="details" class="trip-summary" hidden><div><dt>함께 갈 곳</dt><dd id="journey">목적지 확인 중</dd></div></dl>
+<div id="location-step" hidden>
+<form id="place-search-form" class="place-search" role="search"><label for="place-query" class="sr-only">탑승 장소 검색</label><div class="place-search-row"><input id="place-query" type="search" maxlength="100" placeholder="어디서 탈까요? 장소나 주소 검색" autocomplete="off" enterkeyhint="search"><button id="place-search-button" type="submit" class="primary">검색</button></div><p id="place-search-message" class="hint" role="status" aria-live="polite"></p><ul id="place-results" class="place-results" aria-label="장소 검색 결과"></ul></form>
+<div class="location-actions"><button id="locate" class="secondary">내 위치 사용</button><button id="manual" class="secondary">지도에서 선택</button></div>
+</div>
+<p id="step-label" class="sr-only" role="status"></p><p id="location-message" class="hint" role="status" aria-live="polite"></p>
+<section id="live-card" class="live-card" hidden aria-labelledby="live-title"><h2 id="live-title" class="sr-only">차량 도착 정보</h2><p id="live-eta">픽업 수락을 기다려요</p><p id="live-state" role="status"></p><div id="cafe-visit" class="cafe-visit" role="status" hidden><strong id="cafe-name"></strong><p id="cafe-state"></p><p id="cafe-eta-note" class="hint"></p></div><p id="live-arrival" class="arrival-banner" role="alert" hidden></p><p id="live-updated" class="hint"></p><p id="route-note" class="hint" hidden></p></section>
+<div id="map-step" hidden>
+<div class="map-wrap"><div id="map" aria-label="탑승 장소 지도"></div><div class="map-tools"><button id="actual-position" class="map-action">내 위치</button><button id="fit-live" class="map-action" hidden>차량과 탑승 장소 보기</button></div></div>
+<div class="pickup-summary"><p class="pickup-caption">만날 장소</p><p id="point-label" class="point-label"></p><p id="map-help" class="hint"></p></div>
+<div id="nearby-picks" class="nearby-picks" hidden><p id="nearby-title" class="pickup-caption">주변에서 타기 좋은 곳</p><ul id="nearby-list" class="pick-list" aria-labelledby="nearby-title"></ul><p id="nearby-message" class="hint" role="status" aria-live="polite"></p></div>
+<div id="recommend-actions" hidden><button id="yes" class="primary">여기서 만날게요</button><button id="change" class="text-action">다른 위치 선택</button></div>
+<div id="manual-actions" hidden><label for="point-name">어디에서 기다릴까요?</label><input id="point-name" maxlength="120" placeholder="예: 정문 오른쪽 편의점 앞"><button id="confirm" class="primary">이 위치로 픽업 요청</button></div>
+</div>
+<section id="ready-card" hidden><button id="ready-button" class="primary">도착했어요 · 준비 완료</button><p id="ready-message" role="status" aria-live="polite">탑승 장소에 도착하면 눌러 주세요.</p></section>
+<p id="submit-message" role="status" aria-live="polite"></p><button id="retry" class="text-action" hidden>장소 다시 찾기</button>
+</section>
+<details class="information"><summary>위치 공유 안내</summary><p class="privacy">이 링크를 가진 사람은 탑승 장소와 공유 중인 차량 위치를 볼 수 있어요. 링크는 비공개로 전달해 주세요. 현재 위치는 버튼을 누를 때 확인하고, 확정한 탑승 장소만 운전자에게 전달해요. 차량 위치와 카페 경유 정보는 운전자가 픽업을 수락한 뒤 공유하며 최대 1시간 동안 조회할 수 있어요.</p><p class="privacy">주변 탑승 후보는 승하차 허용 여부가 확인되지 않은 장소예요. 실제 입구와 교통 상황을 확인해 주세요. 위치 정보는 Firebase에 저장되고, 후보 검색 시 약 100m 단위 좌표를 카카오 또는 Overpass에 보내요. 주차장 정보: 카카오맵·OpenStreetMap. 차량이 오는 동안 예상 경로를 그리기 위해 차량·카페·탑승 장소 좌표를 카카오모빌리티 길찾기에 보내요. 장소 검색어는 Photon에 전송돼요. 지도: © OpenStreetMap.</p></details>
+</main></body></html>

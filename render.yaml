@@ -1,0 +1,37 @@
+# Render 배포 설정 (픽미 중계 서버)
+# 비밀 값(Gmail 비밀번호, Firebase 웹 키)은 여기 적지 않는다.
+# sync: false 항목은 Render 화면에서 직접 입력한다.
+services:
+  - type: web
+    name: pickme-relay
+    runtime: node
+    plan: starter            # 무료 플랜은 15분 뒤 잠들어서 시연이 끊긴다
+    region: singapore        # 한국과 가까운 지역
+    buildCommand: npm ci --prefix server/pickme
+    startCommand: node server/pickme/server.mjs
+    healthCheckPath: /health
+    disk:                    # 재시작해도 초대·세션을 유지하기 위한 저장 공간
+      name: pickme-state
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: HOST
+        value: 0.0.0.0
+      - key: PICKME_STATE_FILE
+        value: /var/data/pickme-state.json
+      - key: PUBLIC_BASE_URL
+        value: https://pickme-ca1cd-friend.web.app
+      - key: PICKME_FIREBASE_DATABASE_URL
+        value: https://pickme-ca1cd-default-rtdb.asia-southeast1.firebasedatabase.app
+      - key: PICKME_FIREBASE_WEB_API_KEY
+        sync: false
+      - key: PICKME_GMAIL_USER
+        sync: false
+      - key: PICKME_GMAIL_APP_PASSWORD
+        sync: false
+      - key: PICKME_MAIL_RECIPIENTS_JSON
+        sync: false
+      - key: KAKAO_REST_API_KEY
+        sync: false
