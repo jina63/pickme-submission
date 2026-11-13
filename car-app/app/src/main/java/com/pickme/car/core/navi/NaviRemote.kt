@@ -5,14 +5,12 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import ai.pleos.playground.navi.constants.NaviErrorCode
-import ai.pleos.playground.navi.constants.WaypointCmdType
 import ai.pleos.playground.navi.constants.WaypointIndex
 import ai.pleos.playground.navi.data.CurrentLocationInfo
 import ai.pleos.playground.navi.data.DestinationInfo
 import ai.pleos.playground.navi.data.RequestWaypointInfo
 import ai.pleos.playground.navi.data.RouteInfo
 import ai.pleos.playground.navi.data.RouteStartInfo
-import ai.pleos.playground.navi.data.RouteStateInfo
 import ai.pleos.playground.navi.data.RouteWithWaypointsRequest
 import ai.pleos.playground.navi.data.TripInfo
 import ai.pleos.playground.navi.data.TripRequest
@@ -100,48 +98,38 @@ object NaviRemote {
         private var finished = false
         fun finish(error: String?) { if (!finished) { finished = true; onResult(error) } }
     }
-    private class StoreConfirmation(val store: StoreStop, val friend: FriendStop?, val beforeCount: Int) {
-        var lastSeen = "응답 없음"            // 시간 초과 때 로그로 남길 마지막 경유지 목록
-    }
+    private class StoreConfirmation(val store: StoreStop, val readback: StoreRouteConfirmation)
     private var storeConfirmation: StoreConfirmation? = null
     private val storeConfirmationTimeout = Runnable {
         val pending = storeConfirmation ?: return@Runnable
-        // 이 내비(에뮬레이터 포함)는 경유지 목록을 비워서 줄 수 있다. 오류 없이 요청이 들어갔으니 주문은 진행한다.
-        Log.w(TAG, "카페 경유지를 목록으로 확인하지 못했지만 내비 오류가 없어 진행해요. 마지막 경유지 목록: ${pending.lastSeen}")
-        confirmStore(pending, "시간 초과, 내비 오류 없음")
+        Log.w(TAG, "카페 경유지 확인 시간 초과: ${pending.readback.lastSeen}")
+        pending.readback.onTimeout()
     }
     private val readStoreConfirmation: Runnable = object : Runnable {
         override fun run() {
             if (storeConfirmation == null) return
             try {
                 helper?.getWaypointInfo()
-                helper?.getRouteStateInfo()
                 main.postDelayed(this, 1500)   // 응답이 안 와도 1.5초 뒤 다시 묻는다 (응답이 오면 onWayPointInfo가 이 예약을 지우고 0.5초로 다시 건다)
             } catch (e: Exception) {
                 Log.e(TAG, "경유지 목록 다시 읽기 실패: ${e.message}")
-                val pending = storeConfirmation
-                storeConfirmation = null
-                main.removeCallbacks(storeConfirmationTimeout)
-                pending?.store?.finish("카페 경유지를 확인하지 못했어요. 다시 시도해 주세요.")
+                storeConfirmation?.readback?.fail("카페 경유지를 확인하지 못했어요. 주문은 예약되지 않았어요.")
             }
         }
     }
 
-    /** 좌표가 맞거나, 좌표가 0이거나 조금 달라도 이름이 같으면 같은 경유지로 본다. */
-    private fun sameStop(p: WaypointInfo, lat: Double, lng: Double, name: String): Boolean =
-        reportedWaypointMatch(p, lat, lng, name) == ReportedWaypointMatch.COORDINATE ||
-            p.name.trim() == name.trim()
-
-    /** 카페 경유지 확인 성공 처리. 어떤 방법으로 확인했는지 로그에 남긴다. */
-    private fun confirmStore(c: StoreConfirmation, how: String) {
-        if (storeConfirmation !== c) return            // 이미 끝났거나 다른 요청이면 무시
+    /** Only a matching waypoint-list readback may release the scheduled order. */
+    private fun completeStoreConfirmation(c: StoreConfirmation, error: String?) {
+        if (storeConfirmation !== c) return
         storeConfirmation = null
         main.removeCallbacks(storeConfirmationTimeout)
         main.removeCallbacks(readStoreConfirmation)
-        Log.d(TAG, "카페 경유지 확인 완료: $how")
-        val s = c.store
-        selectedStore = SelectedStore(s.name, s.lat, s.lng, android.os.SystemClock.elapsedRealtime())
-        s.finish(null)
+        val stop = c.store
+        if (error == null) {
+            Log.d(TAG, "카페 경유지와 방문 순서를 목록에서 확인했어요.")
+            selectedStore = SelectedStore(stop.name, stop.lat, stop.lng, android.os.SystemClock.elapsedRealtime())
+        }
+        stop.finish(error)
     }
     /** Last friend stop this app added, so a later cafe can be put in front of it. */
     private class FriendStop(val lat: Double, val lng: Double, val name: String)
@@ -236,17 +224,8 @@ object NaviRemote {
             main.post {
                 val confirmation = storeConfirmation
                 if (confirmation != null) {
-                    val store = confirmation.store
-                    val friend = confirmation.friend
-                    confirmation.lastSeen = waypoints.joinToString(prefix = "${waypoints.size}개 [", postfix = "]") { "${it.name}(${it.latitude}, ${it.longitude})" }
-                    Log.d(TAG, "카페 경유지 확인 중: ${confirmation.lastSeen}")
-                    val storeIndex = waypoints.indexOfFirst { sameStop(it, store.lat, store.lng, store.name) }
-                    val friendIndex = if (friend == null) -1 else waypoints.indexOfFirst { sameStop(it, friend.lat, friend.lng, friend.name) }
-                    // 친구 없이 빈 목록에 매장 하나만 넣었고 지금 정확히 1개면, 이름이 달라도 그 1개를 매장으로 본다
-                    val countOnly = friend == null && confirmation.beforeCount == 0 && waypoints.size == 1
-                    if (storeRouteConfirmed(storeIndex, friendIndex, friend != null) || countOnly) {
-                        confirmStore(confirmation, if (storeIndex == 0) "경유지 목록" else "경유지 개수")
-                    } else {
+                    confirmation.readback.onWaypoints(waypoints)
+                    if (storeConfirmation === confirmation) {
                         main.removeCallbacks(readStoreConfirmation)
                         main.postDelayed(readStoreConfirmation, 500)
                     }
@@ -257,27 +236,16 @@ object NaviRemote {
                 main.removeCallbacks(waypointWaitTimeout)
                 val names = waypoints.map { it.name }
                 Log.d(TAG, "매장 추가 전 경유지 순서: $names")
-                insertStore(dest, store, friendSlotToReorder(names, friendStop?.name, store.name), friendStop?.takeIf { it.name in names }, names.size)
+                insertStore(dest, store, friendSlotToReorder(names, friendStop?.name, store.name), friendStop?.takeIf { it.name in names })
             }
         }
 
         override fun onWaypointChanged(waypointChangedInfo: WaypointChangedInfo) {
             main.post {
-                Log.d(TAG, "경유지 변경 알림: ${waypointChangedInfo.index} ${waypointChangedInfo.cmdType}")
-                val c = storeConfirmation ?: return@post
-                if (waypointChangedInfo.cmdType == WaypointCmdType.ADD && waypointChangedInfo.index == WaypointIndex.FIRST) {
-                    confirmStore(c, "내비 경유지 추가 알림(FIRST ADD)")
-                }
-            }
-        }
-
-        override fun onRouteStateInfo(routeStateInfo: RouteStateInfo) {
-            main.post {
-                val count = routeStateInfo.remainWaypointChargingInt.size
-                Log.d(TAG, "경로 상태: 안내 중=${routeStateInfo.isRouting}, 경유지 ${count}개")
-                val c = storeConfirmation ?: return@post
-                if (c.friend == null && c.beforeCount == 0 && routeStateInfo.isRouting && count == 1) {
-                    confirmStore(c, "경로 상태의 경유지 1개")
+                // An ADD event only acknowledges a request; it does not prove identity/order.
+                if (storeConfirmation != null) {
+                    main.removeCallbacks(readStoreConfirmation)
+                    main.postDelayed(readStoreConfirmation, 500)
                 }
             }
         }
@@ -581,7 +549,7 @@ object NaviRemote {
      * friendSlot이 있으면: 목적지 + [매장 FIRST, 친구 SECOND]로 경로를 한 번에 다시 요청한다(카페 → 친구 순서).
      * 없으면: 매장만 FIRST로 넣는다. 경로 전체를 다시 요청하지 않으므로 목적지는 그대로다.
      */
-    private fun insertStore(dest: DestinationInfo, store: StoreStop, friendSlot: WaypointIndex?, expectedFriend: FriendStop?, beforeCount: Int) {
+    private fun insertStore(dest: DestinationInfo, store: StoreStop, friendSlot: WaypointIndex?, expectedFriend: FriendStop?) {
         val h = helper ?: run { store.finish("내비 연결을 확인해 주세요."); return }
         val friend = friendStop
         val storeRequest = RequestWaypointInfo(
@@ -596,7 +564,14 @@ object NaviRemote {
         )
         selectedStore = null
         // Keep the currently reported friend when verifying the resulting cafe → friend order.
-        storeConfirmation = StoreConfirmation(store, expectedFriend, beforeCount)
+        lateinit var confirmation: StoreConfirmation
+        val readback = StoreRouteConfirmation(
+            store = ExpectedStoreWaypoint(store.lat, store.lng, store.name),
+            friend = expectedFriend?.let { ExpectedStoreWaypoint(it.lat, it.lng, it.name) },
+            onResult = { error -> completeStoreConfirmation(confirmation, error) },
+        )
+        confirmation = StoreConfirmation(store, readback)
+        storeConfirmation = confirmation
         main.removeCallbacks(storeConfirmationTimeout)
         main.postDelayed(storeConfirmationTimeout, 8000)
         try {
@@ -625,9 +600,7 @@ object NaviRemote {
             Log.d(TAG, "매장 경유지(FIRST) 추가 요청 보냄: ${store.name}")
         } catch (e: Exception) {
             Log.e(TAG, "경로 요청 실패: ${e.message}")
-            storeConfirmation = null
-            main.removeCallbacks(storeConfirmationTimeout)
-            store.finish("카페 경유지를 추가하지 못했어요. 다시 시도해 주세요.")
+            readback.fail("카페 경유지를 추가하지 못했어요. 주문은 예약되지 않았어요.")
         }
     }
 

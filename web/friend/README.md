@@ -5,7 +5,7 @@
 ## 접속과 실행
 
 - Firebase 연결 환경의 배포 주소: [pickme-ca1cd-friend.web.app](https://pickme-ca1cd-friend.web.app). 주소만 열지 않고 초대 키를 포함한 **전체 링크**를 사용합니다.
-- `.env`가 없는 제출 환경에서는 차량 앱에서 복사한 로컬 링크를 에뮬레이터를 실행한 컴퓨터 브라우저에 붙여넣습니다. 휴대폰용과 동일한 웹 화면이며, 응답 저장 방식은 [제출 환경 안내](../../server/pickme/README.md#제출-환경과-시연-영상)를 따릅니다.
+- 제출 앱은 배포 서버에서 생성한 공개 HTTPS 링크·QR로 휴대폰 참여를 지원합니다. 제출 컴퓨터에는 `.env`나 로컬 서버 실행이 필요하지 않습니다. [제출 환경 안내](../../server/pickme/README.md#제출-환경과-시연-영상)를 참고합니다.
 - 공개 HTTPS 초대는 차량의 QR로도 열 수 있습니다. QR은 동일 링크를 전달하며 로컬 HTTP 링크를 공개 링크로 바꾸지 않습니다. 조건은 [픽미 QR 안내](../../car-app/app/src/main/java/com/pickme/car/pickme/README.md#qr과-진행-중인-픽업-복원)를 참고합니다.
 - 로컬 실행은 [중계 서버](../../server/pickme/README.md)를 사용합니다. 파일을 직접 여는 방식은 서버 API 연결을 대체하지 않습니다.
 - `hosting-config.js`는 지정된 Hosting 도메인에서만 공개 DB 주소를 선택하며 다른 호스트에서는 로컬 API 모드로 동작합니다. 서버 인증 정보는 포함하지 않습니다.

@@ -14,7 +14,7 @@ Realtime Database의 구조·접근 규칙·시연 매장 시드를 관리합니
 
 주문 상태는 `ordered` → `accepted` → `making` → `ready` → `picked_up`입니다. `etaAt`·`createdAt`은 ISO 시각 문자열이며, 초대·공유의 시각 필드는 각 규칙의 숫자 시각 형식을 따릅니다. 상세 필드는 [데이터 약속](../docs/data-contract.md)과 `database.rules.json`을 기준으로 확인합니다.
 
-픽미 제출본의 기본 로컬 모드에서는 동승자 응답을 Firebase에 저장하지 않고 서버 메모리에서 처리합니다. 아래 초대·준비·공유 경로는 Firebase 연결을 설정한 모드에 해당하며, [제출 환경과 영상 촬영 환경](../server/pickme/README.md#제출-환경과-시연-영상)을 구분합니다. 딱픽업의 `stores`·`orders` 연결은 별도입니다.
+픽미 제출 앱은 HTTPS 배포 중계 서버에 연결합니다. 아래 초대·준비·공유 경로는 서버의 Firebase 연결 설정으로 사용하며, 비밀 환경 변수는 제출 컴퓨터가 아닌 배포 서버에 보관합니다. 별도 로컬 개발에서 Firebase 연결을 생략한 경우에만 응답을 서버 메모리로 처리합니다. [환경 구분](../server/pickme/README.md#제출-환경과-시연-영상)을 참고합니다. 딱픽업의 `stores`·`orders` 연결은 별도입니다.
 
 ## 매장 웹 연결
 

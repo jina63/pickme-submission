@@ -270,7 +270,7 @@ class InvitationViewModel : ViewModel() {
     private var active = false
     private var fetching = false
     @Volatile private var closed = false
-    private val base = "http://10.0.2.2:8787"
+    private val base = "https://pickme-relay.onrender.com"
     private val poll = object : Runnable {
         override fun run() {
             if (!active || closed) return

@@ -156,7 +156,7 @@ class VehicleSharingService : Service() {
     }
     private class SharingApiException(val code:Int,message:String):IllegalStateException(message)
     private fun request(action:String,body:JSONObject?):JSONObject {
-        val connection=URL("http://10.0.2.2:8787/api/pickups/$id"+if(action.isBlank())"" else "/$action").openConnection() as HttpURLConnection
+        val connection=URL("https://pickme-relay.onrender.com/api/pickups/$id"+if(action.isBlank())"" else "/$action").openConnection() as HttpURLConnection
         try {
             connection.connectTimeout=8000;connection.readTimeout=10000;connection.requestMethod=if(body==null)"GET" else "POST"
             connection.setRequestProperty("Cookie",cookie);connection.setRequestProperty("Content-Type","application/json")

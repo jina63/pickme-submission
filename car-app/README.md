@@ -19,7 +19,7 @@ Pleos에서 픽미·딱픽업을 실행하는 Android 앱입니다. Kotlin을 �
 1. Android Studio에서 `car-app`을 열고 SDK Platform 35·Gradle JDK 21을 설정합니다.
 2. Firebase 프로젝트에 맞는 `google-services.json`을 `app/`에 배치하고 Gradle Sync를 완료합니다.
 3. release로 빌드하고 서명된 APK를 Pleos Connect 에뮬레이터에 설치합니다. 홈에서 최신 픽미·딱픽업 화면으로 진입합니다.
-4. 픽미는 [제출 환경 안내](../server/pickme/README.md#제출-환경과-시연-영상)에 따라 `.env` 없이 중계 서버를 실행하고 링크 복사 방식으로 확인합니다.
+4. 픽미는 HTTPS 배포 서버에 접속합니다. [제출 환경 안내](../server/pickme/README.md#제출-환경과-시연-영상)에 따라 초대 링크·QR을 휴대폰에서 열어 확인하며, 제출 컴퓨터에서 `.env`나 서버 실행은 필요하지 않습니다.
 5. 내비 목적지를 설정하고 안전하게 정차한 상태에서 기능을 실행합니다.
 
 `car-app`에서 실행하는 release 빌드 명령입니다.
@@ -44,7 +44,7 @@ adb -s emulator-5554 install -r "<서명된 release APK의 실제 경로>"
 adb -s emulator-5554 shell am start -n com.pickme.car/.home.HomeActivity
 ```
 
-release에 초대 화면·위치 공유 서비스와 로컬 서버 HTTP 허용 설정이 포함됩니다. `google-services.json`·`local.properties`·비밀 설정은 커밋하지 않습니다. 서버 `.env` 미포함과 차량 앱의 Firebase 빌드 설정은 별개입니다.
+release에 초대 화면·위치 공유 서비스가 포함되며 두 통신 경로 모두 `https://pickme-relay.onrender.com`을 사용합니다. 기존 로컬 HTTP 허용 XML은 유지하지만 배포 연결에는 사용하지 않습니다. `google-services.json`·`local.properties`·비밀 설정은 커밋하지 않습니다. 서버 `.env` 미포함과 차량 앱의 Firebase 빌드 설정은 별개입니다.
 
 ## 친구 준비 상태와 초대 화면
 
@@ -103,7 +103,7 @@ macOS·Linux는 `bash ./gradlew :app:assembleDebug -PpickmeLocalInvites=true`를
 | 항목 | 현재 상태·확인 사항 |
 | --- | --- |
 | release 제출 | 최신 화면은 공통으로 사용하나 설치용 서명과 release에서의 실제 연결·권한 확인 필요 |
-| 서버 연결 | 앱은 에뮬레이터용 `http://10.0.2.2:8787` 사용. 실기기·배포용 주소 분리 필요 |
+| 서버 연결 | HTTPS 배포 주소 사용. 인터넷 연결·서버 상태·초대 유효기간 확인 |
 | Firebase 빌드 오류 | `app/google-services.json` 배치와 앱 설정 일치 여부 확인 |
 | 준비 상태 미표시 | 진행 중인 픽업 화면으로 돌아가 서버 응답·초대 유효기간 확인 |
 | 내비 `UnknownHostException` | 앱 서버 장애와 구분해 에뮬레이터 DNS·Pleos 도메인 접근 확인. 재실행 DNS는 해당 네트워크에서 허용한 값 사용 |

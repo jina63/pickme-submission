@@ -15,8 +15,8 @@ data class OrderPlan(
 
 object OrderScheduler {
 
-    /** 시연용 배속: 계획의 1분을 실제로 몇 초로 보여 줄지. 실제 속도는 60. */
-    const val SECONDS_PER_PLAN_MINUTE = 5L
+    /** 제출용 실제 시간: 계획의 1분은 실제 60초다. */
+    const val SECONDS_PER_PLAN_MINUTE = 60L
 
     /**
      * 이동이 준비보다 길면: 그 차이만큼 기다렸다가 주문을 보낸다(도착 시 음료가 막 나옴).
