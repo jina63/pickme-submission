@@ -9,7 +9,7 @@
     "orders": {
       ".read": true,
       "$orderId": {
-        ".write": "newData.exists()",
+        ".write": true,
         ".validate": "newData.hasChildren(['storeId','item','qty','status','etaAt','createdAt']) && (data.exists() ? (newData.child('storeId').val() === data.child('storeId').val() && newData.child('item').val() === data.child('item').val() && newData.child('qty').val() === data.child('qty').val() && newData.child('createdAt').val() === data.child('createdAt').val()) : newData.child('status').val() === 'ordered')",
         "storeId": { ".validate": "newData.isString() && root.child('stores').child(newData.val()).exists()" },
         "item": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
