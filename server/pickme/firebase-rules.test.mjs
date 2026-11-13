@@ -85,7 +85,7 @@ test('kakao picks are accepted only with kakao ids and can be confirmed', async 
   assert.equal((await call(path,'PATCH',{status:'accepted',respondedAt:{'.sv':'timestamp'},pickupPoint:point,locationRequest:null,proposal:null})).ok,true);
 });
 
-test('orders rules: 형식이 맞는 주문만, 삭제·주문 내용 변경은 거부', async () => {
+test('orders rules: 형식이 맞는 주문만, 주문 내용 변경은 거부 (매장 화면의 주문 삭제는 허용)', async () => {
   // 매장 데이터는 앱에서 쓸 수 없으므로 에뮬레이터 관리자 권한으로 준비한다.
   await fetch(`${base}/stores/store-a.json?ns=${ns}`, { method: 'PUT', headers: { Authorization: 'Bearer owner' }, body: JSON.stringify({ name: '테스트 매장' }) });
   const order = { storeId: 'store-a', item: '돌체 라떼', qty: 1, status: 'ordered', etaAt: '2026-11-05T15:20:00+09:00', createdAt: '2026-11-05T15:00:00+09:00' };
@@ -98,7 +98,6 @@ test('orders rules: 형식이 맞는 주문만, 삭제·주문 내용 변경은 
   assert.equal((await call(`${path}/status`, 'PUT', 'hacked')).ok, false);
   assert.equal((await call(`${path}/etaAt`, 'PUT', '2026-11-05T15:30:00+09:00')).ok, true);
   assert.equal((await call(`${path}/item`, 'PUT', '다른 메뉴')).ok, false, '주문 내용 변경 거부');
-  assert.equal((await call(path, 'DELETE')).ok, false, '삭제 거부');
   assert.equal((await call('orders', 'PUT', {})).ok, false, '전체 덮어쓰기 거부');
-  assert.equal((await call(path)).ok, true);
+  assert.equal((await call(path, 'DELETE')).ok, true, '매장 화면의 주문 삭제 버튼은 동작해야 함');
 });
