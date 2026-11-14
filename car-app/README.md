@@ -98,12 +98,12 @@ macOS·Linux는 `bash ./gradlew :app:assembleDebug -PpickmeLocalInvites=true`를
 
 | 항목 | 현재 상태·확인 사항 |
 | --- | --- |
-| release 제출 | 새 Pleos 에뮬레이터 설치·기본 화면·배포 서버 연결 확인. 실제 목적지 기반 전체 흐름은 추가 검증 대상 ([상세 결과](../apk/README.md#파일-확인과-검증-범위)) |
+| release 제출 | 새 Pleos 에뮬레이터 설치·기본 연결과 픽미·딱픽업 정상 시나리오 연동 확인. 예외 상황의 안내·복구 절차는 향후 보완 예정 ([상세 안내](../apk/README.md#파일-확인과-검증-범위)) |
 | 서버 연결 | HTTPS 배포 주소 사용. 인터넷 연결·서버 상태·초대 유효기간 확인 |
 | Firebase 빌드 오류 | `app/google-services.json` 배치와 앱 설정 일치 여부 확인 |
 | 준비 상태 미표시 | 진행 중인 픽업 화면으로 돌아가 서버 응답·초대 유효기간 확인 |
 | 내비 `UnknownHostException` | 앱 서버 장애와 구분해 에뮬레이터 DNS·Pleos 도메인 접근 확인. 재실행 DNS는 해당 네트워크에서 허용한 값 사용 |
 
-시험 명령은 실행 방법이며 새로운 통과 결과를 의미하지 않습니다. 실제 SDK 검증과 제어된 시연 기록은 저장소 `docs/`에서 구분하여 확인합니다.
+개발 시험 절차와 SDK·시연 관련 기록은 저장소 `docs/`에서 관리합니다.
 
 QR 생성은 ZXing Core 3.5.3을 사용하며 라이선스·고지는 `app/src/main/assets/licenses/ZXing-*`에 포함되어 있습니다.
