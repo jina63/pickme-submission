@@ -14,7 +14,11 @@ Pleos에서 픽미·딱픽업을 실행하는 Android 앱입니다. Kotlin을 �
 | 기존 제출 문서의 화면 규격 | 2560 × 1440, 가로, 12.8인치, mdpi |
 | Firebase 설정 | `app/google-services.json` |
 
-## 제출용 release 빌드·실행
+## 제출 APK 실행
+
+서명된 `apk/345_Pickme_release.apk`가 저장소에 포함되어 있습니다. 다운로드·설치·실행 명령과 파일 정보는 [제출 APK 안내](../apk/README.md)에서 관리합니다. 제공된 APK를 설치할 때는 소스 빌드나 별도의 `google-services.json` 파일을 준비하지 않습니다.
+
+## 소스에서 release 빌드
 
 1. Android Studio에서 `car-app`을 열고 SDK Platform 35·Gradle JDK 21을 설정합니다.
 2. Firebase 프로젝트에 맞는 `google-services.json`을 `app/`에 배치하고 Gradle Sync를 완료합니다.
@@ -34,15 +38,7 @@ Pleos에서 픽미·딱픽업을 실행하는 Android 앱입니다. Kotlin을 �
 bash ./gradlew :app:assembleRelease
 ```
 
-현재 `app/build.gradle.kts`에는 release 서명 설정이 없으므로 빌드 명령만으로 제출·설치용 서명이 완료되지는 않습니다. 별도 서명 절차를 거친 APK를 사용합니다. 저장소에 `apk/345_Pickme_release.apk`가 포함되어 있지 않아 해당 파일의 다운로드 링크는 제공하지 않습니다.
-
-아래 `<서명된 release APK의 실제 경로>`를 준비한 파일 경로로 바꾸고, 장치 ID는 `adb devices` 결과에 맞춥니다.
-
-```bash
-adb devices
-adb -s emulator-5554 install -r "<서명된 release APK의 실제 경로>"
-adb -s emulator-5554 shell am start -n com.pickme.car/.home.HomeActivity
-```
+현재 `app/build.gradle.kts`에는 release 서명 설정이 없으므로 빌드 명령만으로 제출·설치용 서명이 완료되지는 않습니다. 새 APK를 만드는 경우 Android Studio의 **Build → Generate Signed App Bundle or APK → APK**에서 별도 서명하거나 담당자가 관리하는 서명 절차를 사용합니다. 서명 키(`.jks`·`.keystore`)는 저장소 밖에서 보관하며 커밋하지 않습니다. 빌드 결과가 저장소의 제출 APK를 자동으로 교체하지는 않습니다. 새 파일을 설치할 때도 [APK 설치 안내](../apk/README.md#설치와-실행)를 따릅니다.
 
 release에 초대 화면·위치 공유 서비스가 포함되며 두 통신 경로 모두 `https://pickme-relay.onrender.com`을 사용합니다. 기존 로컬 HTTP 허용 XML은 유지하지만 배포 연결에는 사용하지 않습니다. `google-services.json`·`local.properties`·비밀 설정은 커밋하지 않습니다. 서버 `.env` 미포함과 차량 앱의 Firebase 빌드 설정은 별개입니다.
 
@@ -74,9 +70,9 @@ bash ./gradlew :app:testDebugUnitTest
 adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Firebase 설정 없는 로컬 초대 시험
+### Firebase 설정 없는 개발 빌드
 
-`google-services.json` 없이 로컬 초대만 시험할 때 사용하는 별도 개발 옵션입니다. Google Services 설정 플러그인을 생략하므로 딱픽업 Firebase 기능 시험이나 제출용 빌드를 대체하지 않습니다.
+`google-services.json` 없이 초대 관련 코드의 빌드·시험에 사용하는 별도 개발 옵션입니다. Google Services 설정 플러그인을 생략하므로 딱픽업 Firebase 기능 시험이나 제출용 빌드를 대체하지 않습니다. 옵션 이름과 관계없이 앱의 서버 주소는 HTTPS 배포 주소를 유지하며 로컬 서버로 자동 전환되지 않습니다.
 
 ```powershell
 .\gradlew.bat :app:assembleDebug -PpickmeLocalInvites=true
@@ -102,7 +98,7 @@ macOS·Linux는 `bash ./gradlew :app:assembleDebug -PpickmeLocalInvites=true`를
 
 | 항목 | 현재 상태·확인 사항 |
 | --- | --- |
-| release 제출 | 최신 화면은 공통으로 사용하나 설치용 서명과 release에서의 실제 연결·권한 확인 필요 |
+| release 제출 | 새 Pleos 에뮬레이터 설치·기본 화면·배포 서버 연결 확인. 실제 목적지 기반 전체 흐름은 추가 검증 대상 ([상세 결과](../apk/README.md#파일-확인과-검증-범위)) |
 | 서버 연결 | HTTPS 배포 주소 사용. 인터넷 연결·서버 상태·초대 유효기간 확인 |
 | Firebase 빌드 오류 | `app/google-services.json` 배치와 앱 설정 일치 여부 확인 |
 | 준비 상태 미표시 | 진행 중인 픽업 화면으로 돌아가 서버 응답·초대 유효기간 확인 |
