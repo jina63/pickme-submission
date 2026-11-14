@@ -23,7 +23,7 @@ Pleos에서 픽미·딱픽업을 실행하는 Android 앱입니다. Kotlin을 �
 1. Android Studio에서 `car-app`을 열고 SDK Platform 35·Gradle JDK 21을 설정합니다.
 2. Firebase 프로젝트에 맞는 `google-services.json`을 `app/`에 배치하고 Gradle Sync를 완료합니다.
 3. release로 빌드하고 서명된 APK를 Pleos Connect 에뮬레이터에 설치합니다. 홈에서 최신 픽미·딱픽업 화면으로 진입합니다.
-4. 픽미는 HTTPS 배포 서버에 접속합니다. [제출 환경 안내](../server/pickme/README.md#제출-환경과-시연-영상)에 따라 초대 링크·QR을 휴대폰에서 열어 확인하며, 제출 컴퓨터에서 `.env`나 서버 실행은 필요하지 않습니다.
+4. 픽미는 HTTPS 배포 서버에 접속합니다. [제출 환경 안내](../server/pickme/README.md#제출-환경과-시연-영상)에 따라 초대 링크·QR을 휴대폰에서 열어 확인하며, 개인 컴퓨터에서 `.env`나 서버 실행은 필요하지 않습니다.
 5. 내비 목적지를 설정하고 안전하게 정차한 상태에서 기능을 실행합니다.
 
 `car-app`에서 실행하는 release 빌드 명령입니다.
@@ -44,7 +44,7 @@ release에 초대 화면·위치 공유 서비스가 포함되며 두 통신 경
 
 ## 친구 준비 상태와 초대 화면
 
-준비 완료는 차량 앱의 픽업 화면에 표시합니다. 내비 위 팝업은 제거되어 별도의 오버레이 권한이나 ADB 설정이 필요하지 않습니다. 초대 QR·진행 중인 픽업 복원은 [픽미 안내](app/src/main/java/com/pickme/car/pickme/README.md)에서 관리합니다.
+준비 상태는 차량 앱의 픽업 화면에 표시하며, 별도의 오버레이 권한이나 ADB 설정이 필요하지 않습니다. 초대 QR·진행 중인 픽업 복원은 [픽미 안내](app/src/main/java/com/pickme/car/pickme/README.md)에서 관리합니다.
 
 ## 개발용 빌드와 테스트
 
