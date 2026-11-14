@@ -10,8 +10,8 @@ Pleos에서 픽미·딱픽업을 실행하는 Android 앱입니다. Kotlin을 �
 | Gradle 실행 JDK / 컴파일 대상 | JDK 21 / Java·Kotlin JVM 17 |
 | Android SDK | compileSdk·targetSdk 35, minSdk 23 |
 | Gradle Wrapper / NaviHelper | 8.10.2 / 3.0.5 |
-| 기존 제출 문서의 시연 환경 | Pleos Connect v2.1.0, Android 14 / API 34, arm64 |
-| 기존 제출 문서의 화면 규격 | 2560 × 1440, 가로, 12.8인치, mdpi |
+| 테스트 환경 | Pleos Connect v2.1.0, Android 14 / API 34, arm64 |
+| 화면 규격 | 2560 × 1440, 가로, 12.8인치, mdpi |
 | Firebase 설정 | `app/google-services.json` |
 
 ## 제출 APK 실행
@@ -40,7 +40,7 @@ bash ./gradlew :app:assembleRelease
 
 현재 `app/build.gradle.kts`에는 release 서명 설정이 없으므로 빌드 명령만으로 제출·설치용 서명이 완료되지는 않습니다. 새 APK를 만드는 경우 Android Studio의 **Build → Generate Signed App Bundle or APK → APK**에서 별도 서명하거나 담당자가 관리하는 서명 절차를 사용합니다. 서명 키(`.jks`·`.keystore`)는 저장소 밖에서 보관하며 커밋하지 않습니다. 빌드 결과가 저장소의 제출 APK를 자동으로 교체하지는 않습니다. 새 파일을 설치할 때도 [APK 설치 안내](../apk/README.md#설치와-실행)를 따릅니다.
 
-release에 초대 화면·위치 공유 서비스가 포함되며 두 통신 경로 모두 `https://pickme-relay.onrender.com`을 사용합니다. 기존 로컬 HTTP 허용 XML은 유지하지만 배포 연결에는 사용하지 않습니다. `google-services.json`·`local.properties`·비밀 설정은 커밋하지 않습니다. 서버 `.env` 미포함과 차량 앱의 Firebase 빌드 설정은 별개입니다.
+release에 초대 화면·위치 공유 서비스가 포함되며 두 통신 경로 모두 `https://pickme-relay.onrender.com`을 사용합니다. `google-services.json`·`local.properties`·비밀 설정은 커밋하지 않습니다. 서버 `.env` 미포함과 차량 앱의 Firebase 빌드 설정은 별개입니다.
 
 ## 친구 준비 상태와 초대 화면
 
@@ -48,7 +48,7 @@ release에 초대 화면·위치 공유 서비스가 포함되며 두 통신 경
 
 ## 개발용 빌드와 테스트
 
-아래 명령은 개발·회귀 시험용이며 제출용 release 설치 절차와 구분합니다. debug 빌드 자체는 유지되지만, 과거의 debug 전용 픽미 구성은 main으로 통합되어 기능 진입을 공유합니다.
+아래 명령은 개발용 빌드와 단위 테스트에 사용합니다.
 
 `car-app`에서 실행합니다.
 

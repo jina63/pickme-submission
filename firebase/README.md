@@ -40,7 +40,7 @@ Realtime Database의 구조·접근 규칙·시연 매장 시드를 관리합니
 
 ## 규칙 검증과 적용
 
-Firebase CLI와 에뮬레이터 실행 환경, 서버 의존성을 준비한 뒤 저장소 루트에서 실행합니다. 아래는 실행 방법이며 새 시험 결과가 아닙니다.
+Firebase CLI와 에뮬레이터 실행 환경, 서버 의존성을 준비한 뒤 저장소 루트에서 실행합니다.
 
 ```bash
 firebase emulators:exec --only database,auth --project demo-pickme-invites --config firebase.emulators.json "node --test server/pickme/firebase-rules.test.mjs server/pickme/live-rules.test.mjs server/pickme/live-tracking.test.mjs server/pickme/live-api.test.mjs"
